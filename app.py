@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, redirect, url_for
 import database
 
 app = Flask(__name__)
@@ -25,6 +25,28 @@ def home():
 def api_home():
     """API endpoint."""
     return jsonify({"message": "Personal Blog API"})
+
+@app.route('/post/<int:post_id>')
+def view_post(post_id):
+    """View a single blog post with comments."""
+    post = database.get_post_by_id(post_id)
+    if post is None:
+        return "Post not found", 404
+    tags = database.get_tags_for_post(post_id)
+    comments = database.get_comments_by_post(post_id)
+    return render_template('post.html', post=post, tags=tags, comments=comments)
+
+@app.route('/post/<int:post_id>/comment', methods=['POST'])
+def add_comment(post_id):
+    """Add a comment to a post."""
+    author = request.form.get('author')
+    title = request.form.get('title')
+    content = request.form.get('content')
+    
+    if author and title and content:
+        database.create_comment(post_id, author, title, content)
+    
+    return redirect(url_for('view_post', post_id=post_id))
 
 @app.route('/posts', methods=['GET'])
 def get_posts():

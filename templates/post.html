@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - Personal Blog{% endblock %}
+
+{% block content %}
+<article>
+    <h2>{{ post.title }}</h2>
+    <p style="color: #666; margin: 10px 0;">Published: {{ post.created_at }}</p>
+    
+    <div style="margin: 15px 0;">
+        {% for tag in tags %}
+        <a href="/tag/{{ tag.name }}" class="tag">{{ tag.name }}</a>
+        {% endfor %}
+    </div>
+    
+    <div style="margin: 30px 0; line-height: 1.8;">
+        {{ post.content }}
+    </div>
+    
+    <a href="/edit/{{ post.id }}" class="btn" style="margin-top: 20px;">Edit Post</a>
+</article>
+
+<hr style="margin: 40px 0;">
+
+<section>
+    <h3>Comments ({{ comments|length }})</h3>
+    
+    {% if comments %}
+        {% for comment in comments %}
+        <div style="background: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 5px;">
+            <h4 style="margin-bottom: 5px;">{{ comment.title }}</h4>
+            <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                By {{ comment.author }} on {{ comment.created_at }}
+            </p>
+            <p>{{ comment.content }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No comments yet. Be the first to comment!</p>
+    {% endif %}
+</section>
+
+<hr style="margin: 40px 0;">
+
+<section>
+    <h3>Add a Comment</h3>
+    <form method="POST" action="/post/{{ post.id }}/comment" style="margin-top: 20px;">
+        <div style="margin-bottom: 15px;">
+            <label for="author" style="display: block; margin-bottom: 5px;">Your Name:</label>
+            <input type="text" id="author" name="author" required 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="title" style="display: block; margin-bottom: 5px;">Comment Title:</label>
+            <input type="text" id="title" name="title" required 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="content" style="display: block; margin-bottom: 5px;">Your Comment:</label>
+            <textarea id="content" name="content" required rows="4"
+                      style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px;"></textarea>
+        </div>
+        
+        <button type="submit" class="btn">Submit Comment</button>
+    </form>
+</section>
+
+<div style="margin-top: 30px;">
+    <a href="/">← Back to Home</a>
+</div>
+{% endblock %}
