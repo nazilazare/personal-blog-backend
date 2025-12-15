@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 import database
 
 app = Flask(__name__)
@@ -11,7 +11,19 @@ except:
 
 @app.route('/')
 def home():
-    """Home endpoint."""
+    """Home page with all blog posts."""
+    posts = database.get_all_posts()
+    # Add tags to each post
+    posts_with_tags = []
+    for post in posts:
+        post_dict = dict(post)
+        post_dict['tags'] = database.get_tags_for_post(post['id'])
+        posts_with_tags.append(post_dict)
+    return render_template('home.html', posts=posts_with_tags)
+
+@app.route('/api')
+def api_home():
+    """API endpoint."""
     return jsonify({"message": "Personal Blog API"})
 
 @app.route('/posts', methods=['GET'])
