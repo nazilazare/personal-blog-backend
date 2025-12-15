@@ -3,6 +3,12 @@ import database
 
 app = Flask(__name__)
 
+# Initialize database on first run
+try:
+    database.init_db()
+except:
+    pass
+
 @app.route('/')
 def home():
     """Home endpoint."""
