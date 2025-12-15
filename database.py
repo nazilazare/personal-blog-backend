@@ -37,3 +37,20 @@ def get_post_by_id(post_id):
     post = conn.execute('SELECT * FROM posts WHERE id = ?', (post_id,)).fetchone()
     conn.close()
     return post
+
+# Comments functions
+def create_comment(post_id, author, content):
+    """Create a new comment for a post."""
+    conn = get_db_connection()
+    conn.execute('INSERT INTO comments (post_id, author, content) VALUES (?, ?, ?)', 
+                 (post_id, author, content))
+    conn.commit()
+    conn.close()
+
+def get_comments_by_post(post_id):
+    """Get all comments for a specific post."""
+    conn = get_db_connection()
+    comments = conn.execute('SELECT * FROM comments WHERE post_id = ? ORDER BY created_at ASC', 
+                           (post_id,)).fetchall()
+    conn.close()
+    return comments
