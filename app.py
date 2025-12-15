@@ -35,5 +35,24 @@ def create_post():
     database.create_post(title, content)
     return jsonify({"message": "Post created successfully"}), 201
 
+@app.route('/posts/<int:post_id>/comments', methods=['GET'])
+def get_comments(post_id):
+    """Get all comments for a post."""
+    comments = database.get_comments_by_post(post_id)
+    return jsonify([dict(comment) for comment in comments])
+
+@app.route('/posts/<int:post_id>/comments', methods=['POST'])
+def create_comment(post_id):
+    """Create a new comment for a post."""
+    data = request.get_json()
+    author = data.get('author')
+    content = data.get('content')
+    
+    if not author or not content:
+        return jsonify({"error": "Author and content are required"}), 400
+    
+    database.create_comment(post_id, author, content)
+    return jsonify({"message": "Comment created successfully"}), 201
+
 if __name__ == '__main__':
     app.run(debug=True)
