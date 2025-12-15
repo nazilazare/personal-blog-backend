@@ -108,6 +108,18 @@ def edit_post_page(post_id):
     
     return render_template('post_form.html', post=post, tags=tags_string)
 
+@app.route('/tag/<tag_name>')
+def view_tag(tag_name):
+    """View all posts with a specific tag."""
+    posts = database.get_posts_by_tag(tag_name)
+    # Add tags to each post
+    posts_with_tags = []
+    for post in posts:
+        post_dict = dict(post)
+        post_dict['tags'] = database.get_tags_for_post(post['id'])
+        posts_with_tags.append(post_dict)
+    return render_template('tag.html', tag_name=tag_name, posts=posts_with_tags)
+
 @app.route('/posts', methods=['GET'])
 def get_posts():
     """Get all posts."""
