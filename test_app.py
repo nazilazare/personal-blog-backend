@@ -75,3 +75,28 @@ def test_integration_view_post_detail(client):
     assert b'Sample Post' in response.data
     assert b'This is sample content.' in response.data
     assert b'Add a Comment' in response.data
+
+def test_integration_add_comment(client):
+    """Test adding a comment to a post."""
+    # Create a post first (using database function for setup)
+    database.create_post('Post with Comment', 'Content for commenting.')
+    posts = database.get_all_posts()
+    post_id = posts[0]['id']
+    
+    # Add a comment
+    response = client.post(f'/post/{post_id}/comment', data={
+        'author': 'Test Author',
+        'title': 'Test Comment Title',
+        'content': 'This is a test comment.'
+    }, follow_redirects=True)
+    
+    assert response.status_code == 200
+    assert b'Test Comment Title' in response.data
+    assert b'Test Author' in response.data
+    assert b'This is a test comment.' in response.data
+    
+    # Verify comment was created in database
+    comments = database.get_comments_by_post(post_id)
+    assert len(comments) == 1
+    assert comments[0]['author'] == 'Test Author'
+    assert comments[0]['title'] == 'Test Comment Title'
