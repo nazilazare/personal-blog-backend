@@ -74,3 +74,40 @@ def test_create_and_get_comment(test_db):
     assert len(comments) == 2
     assert comments[0]['author'] == "Alice"
     assert comments[1]['author'] == "Bob"
+
+def test_create_and_get_tags(test_db):
+    """Test creating and retrieving tags."""
+    # Create a post
+    database.create_post("Tagged Post", "Content")
+    posts = database.get_all_posts()
+    post_id = posts[0]['id']
+    
+    # Add tags
+    database.add_tag_to_post(post_id, "python")
+    database.add_tag_to_post(post_id, "flask")
+    
+    # Get tags for post
+    tags = database.get_tags_for_post(post_id)
+    assert len(tags) == 2
+    tag_names = [tag['name'] for tag in tags]
+    assert "python" in tag_names
+    assert "flask" in tag_names
+
+def test_get_posts_by_tag(test_db):
+    """Test retrieving posts by tag."""
+    # Create posts with tags
+    database.create_post("Python Post 1", "Content 1")
+    database.create_post("Python Post 2", "Content 2")
+    database.create_post("JavaScript Post", "Content 3")
+    
+    posts = database.get_all_posts()
+    database.add_tag_to_post(posts[0]['id'], "python")
+    database.add_tag_to_post(posts[1]['id'], "python")
+    database.add_tag_to_post(posts[2]['id'], "javascript")
+    
+    # Get posts by tag
+    python_posts = database.get_posts_by_tag("python")
+    assert len(python_posts) == 2
+    
+    js_posts = database.get_posts_by_tag("javascript")
+    assert len(js_posts) == 1
