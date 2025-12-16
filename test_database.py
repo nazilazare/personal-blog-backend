@@ -29,3 +29,31 @@ def test_create_and_get_post(test_db):
     assert len(posts) == 1
     assert posts[0]['title'] == "Test Post"
     assert posts[0]['content'] == "This is test content"
+
+def test_get_post_by_id(test_db):
+    """Test retrieving a post by ID."""
+    # Create a post
+    database.create_post("Test Post", "Content")
+    posts = database.get_all_posts()
+    post_id = posts[0]['id']
+    
+    # Get post by ID
+    post = database.get_post_by_id(post_id)
+    assert post is not None
+    assert post['title'] == "Test Post"
+    assert post['id'] == post_id
+
+def test_update_post(test_db):
+    """Test updating a post."""
+    # Create a post
+    database.create_post("Original Title", "Original Content")
+    posts = database.get_all_posts()
+    post_id = posts[0]['id']
+    
+    # Update the post
+    database.update_post(post_id, "Updated Title", "Updated Content")
+    
+    # Verify update
+    post = database.get_post_by_id(post_id)
+    assert post['title'] == "Updated Title"
+    assert post['content'] == "Updated Content"
