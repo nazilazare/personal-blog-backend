@@ -100,3 +100,66 @@ def test_integration_add_comment(client):
     assert len(comments) == 1
     assert comments[0]['author'] == 'Test Author'
     assert comments[0]['title'] == 'Test Comment Title'
+
+def test_integration_tag_filtering(client):
+    """Test viewing posts filtered by tag."""
+    # Create a post and add a tag to it
+    database.create_post('Tagged Post', 'This post has a testtag.')
+    posts = database.get_all_posts()
+    database.add_tag_to_post(posts[0]['id'], 'testtag')
+    
+    # Filter by the tag - should show the post
+    response = client.get('/tag/testtag')
+    assert response.status_code == 200
+    assert b'Tagged Post' in response.data
+    assert b'testtag' in response.data
+
+
+# ============================================================================
+# END-TO-END TESTS
+# These tests ONLY use HTTP requests (like a real user would)
+# No direct database function calls - everything through forms and pages
+# ============================================================================
+
+def test_e2e_full_post_workflow(client):
+    """Test complete workflow: create post, view it, add comment."""
+    # Create a post via form submission
+    response = client.post('/create', data={
+        'title': 'E2E Test Post',
+        'content': 'This is content created via form in E2E test.',
+        'tags': 'testing, automation'
+    }, follow_redirects=True)
+    
+    # Verify post appears on home page
+    assert response.status_code == 200
+    assert b'E2E Test Post' in response.data
+    assert b'testing' in response.data
+    assert b'automation' in response.data
+    
+    # Extract post ID from the response HTML
+    # Look for the post link in the HTML
+    response_text = response.data.decode('utf-8')
+    import re
+    match = re.search(r'/post/(\d+)', response_text)
+    assert match is not None, "Could not find post link in response"
+    post_id = match.group(1)
+    
+    # View the post detail page
+    response = client.get(f'/post/{post_id}')
+    assert response.status_code == 200
+    assert b'E2E Test Post' in response.data
+    assert b'This is content created via form in E2E test.' in response.data
+    assert b'Add a Comment' in response.data
+    
+    # Add a comment via form
+    response = client.post(f'/post/{post_id}/comment', data={
+        'author': 'E2E Tester',
+        'title': 'E2E Comment',
+        'content': 'This comment was added via E2E test.'
+    }, follow_redirects=True)
+    
+    # Verify comment appears on the page
+    assert response.status_code == 200
+    assert b'E2E Comment' in response.data
+    assert b'E2E Tester' in response.data
+    assert b'This comment was added via E2E test.' in response.data
