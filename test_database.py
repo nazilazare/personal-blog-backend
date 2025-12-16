@@ -111,3 +111,39 @@ def test_get_posts_by_tag(test_db):
     
     js_posts = database.get_posts_by_tag("javascript")
     assert len(js_posts) == 1
+
+def test_remove_post_tags(test_db):
+    """Test removing tags from a post."""
+    # Create post with tags
+    database.create_post("Post", "Content")
+    posts = database.get_all_posts()
+    post_id = posts[0]['id']
+    
+    database.add_tag_to_post(post_id, "tag1")
+    database.add_tag_to_post(post_id, "tag2")
+    
+    # Verify tags exist
+    tags = database.get_tags_for_post(post_id)
+    assert len(tags) == 2
+    
+    # Remove tags
+    database.remove_post_tags(post_id)
+    
+    # Verify tags removed
+    tags = database.get_tags_for_post(post_id)
+    assert len(tags) == 0
+
+def test_post_ordering(test_db):
+    """Test that posts are ordered by date (newest first)."""
+    # Create multiple posts
+    database.create_post("First Post", "Content 1")
+    database.create_post("Second Post", "Content 2")
+    database.create_post("Third Post", "Content 3")
+    
+    # Get all posts
+    posts = database.get_all_posts()
+    
+    # Verify order (newest first)
+    assert posts[0]['title'] == "Third Post"
+    assert posts[1]['title'] == "Second Post"
+    assert posts[2]['title'] == "First Post"
