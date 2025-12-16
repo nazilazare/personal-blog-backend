@@ -39,12 +39,16 @@ def view_post(post_id):
 @app.route('/post/<int:post_id>/comment', methods=['POST'])
 def add_comment(post_id):
     """Add a comment to a post."""
-    author = request.form.get('author')
-    title = request.form.get('title')
-    content = request.form.get('content')
+    author = request.form.get('author', '').strip()
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
     
+    # Basic validation
     if author and title and content:
-        database.create_comment(post_id, author, title, content)
+        if len(author) >= 2 and len(author) <= 100:
+            if len(title) >= 3 and len(title) <= 200:
+                if len(content) >= 5 and len(content) <= 1000:
+                    database.create_comment(post_id, author, title, content)
     
     return redirect(url_for('view_post', post_id=post_id))
 
@@ -52,22 +56,30 @@ def add_comment(post_id):
 def create_post_page():
     """Create a new blog post."""
     if request.method == 'POST':
-        title = request.form.get('title')
-        content = request.form.get('content')
-        tags = request.form.get('tags', '')
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        tags = request.form.get('tags', '').strip()
         
-        if title and content:
-            database.create_post(title, content)
-            # Get the last inserted post
-            posts = database.get_all_posts()
-            if posts:
-                post_id = posts[0]['id']
-                # Add tags
-                if tags:
-                    tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
-                    for tag in tag_list:
+        # Basic validation
+        if not title or len(title) < 3:
+            return "Error: Title must be at least 3 characters long", 400
+        if not content or len(content) < 10:
+            return "Error: Content must be at least 10 characters long", 400
+        if len(title) > 200:
+            return "Error: Title is too long (max 200 characters)", 400
+        
+        database.create_post(title, content)
+        # Get the last inserted post
+        posts = database.get_all_posts()
+        if posts:
+            post_id = posts[0]['id']
+            # Add tags
+            if tags:
+                tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+                for tag in tag_list[:10]:  # Limit to 10 tags
+                    if len(tag) <= 50:  # Limit tag length
                         database.add_tag_to_post(post_id, tag)
-                return redirect(url_for('view_post', post_id=post_id))
+            return redirect(url_for('view_post', post_id=post_id))
         
     return render_template('post_form.html')
 
@@ -79,23 +91,31 @@ def edit_post_page(post_id):
         return "Post not found", 404
     
     if request.method == 'POST':
-        title = request.form.get('title')
-        content = request.form.get('content')
-        tags = request.form.get('tags', '')
+        title = request.form.get('title', '').strip()
+        content = request.form.get('content', '').strip()
+        tags = request.form.get('tags', '').strip()
         
-        if title and content:
-            # Update post using database function
-            database.update_post(post_id, title, content)
-            
-            # Remove old tags and add new ones
-            database.remove_post_tags(post_id)
-            
-            if tags:
-                tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
-                for tag in tag_list:
+        # Basic validation
+        if not title or len(title) < 3:
+            return "Error: Title must be at least 3 characters long", 400
+        if not content or len(content) < 10:
+            return "Error: Content must be at least 10 characters long", 400
+        if len(title) > 200:
+            return "Error: Title is too long (max 200 characters)", 400
+        
+        # Update post using database function
+        database.update_post(post_id, title, content)
+        
+        # Remove old tags and add new ones
+        database.remove_post_tags(post_id)
+        
+        if tags:
+            tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+            for tag in tag_list[:10]:  # Limit to 10 tags
+                if len(tag) <= 50:  # Limit tag length
                     database.add_tag_to_post(post_id, tag)
-            
-            return redirect(url_for('view_post', post_id=post_id))
+        
+        return redirect(url_for('view_post', post_id=post_id))
     
     # Get current tags
     current_tags = database.get_tags_for_post(post_id)
