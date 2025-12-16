@@ -42,3 +42,20 @@ def test_integration_create_post_page_get(client):
     response = client.get('/create')
     assert response.status_code == 200
     assert b'Create New Post' in response.data
+
+def test_integration_create_post_via_form(client):
+    """Test creating a post through the form submission."""
+    response = client.post('/create', data={
+        'title': 'Test Post Title',
+        'content': 'This is test content for the post.',
+        'tags': 'python, testing'
+    }, follow_redirects=True)
+    
+    assert response.status_code == 200
+    assert b'Test Post Title' in response.data
+    
+    # Verify post was created in database
+    posts = database.get_all_posts()
+    assert len(posts) == 1
+    assert posts[0]['title'] == 'Test Post Title'
+    assert posts[0]['content'] == 'This is test content for the post.'
