@@ -38,6 +38,14 @@ def get_post_by_id(post_id):
     conn.close()
     return post
 
+def update_post(post_id, title, content):
+    """Update an existing blog post."""
+    conn = get_db_connection()
+    conn.execute('UPDATE posts SET title = ?, content = ? WHERE id = ?',
+                (title, content, post_id))
+    conn.commit()
+    conn.close()
+
 # Comments functions
 def create_comment(post_id, author, title, content):
     """Create a new comment for a post."""
@@ -119,3 +127,10 @@ def get_all_tags():
     tags = conn.execute('SELECT * FROM tags ORDER BY name').fetchall()
     conn.close()
     return tags
+
+def remove_post_tags(post_id):
+    """Remove all tags from a post."""
+    conn = get_db_connection()
+    conn.execute('DELETE FROM post_tags WHERE post_id = ?', (post_id,))
+    conn.commit()
+    conn.close()

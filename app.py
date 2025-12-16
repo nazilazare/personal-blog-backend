@@ -84,16 +84,11 @@ def edit_post_page(post_id):
         tags = request.form.get('tags', '')
         
         if title and content:
-            # Update post (we'll add this function)
-            conn = database.get_db_connection()
-            conn.execute('UPDATE posts SET title = ?, content = ? WHERE id = ?',
-                        (title, content, post_id))
-            conn.commit()
+            # Update post using database function
+            database.update_post(post_id, title, content)
             
             # Remove old tags and add new ones
-            conn.execute('DELETE FROM post_tags WHERE post_id = ?', (post_id,))
-            conn.commit()
-            conn.close()
+            database.remove_post_tags(post_id)
             
             if tags:
                 tag_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
