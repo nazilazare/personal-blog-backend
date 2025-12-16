@@ -59,3 +59,19 @@ def test_integration_create_post_via_form(client):
     assert len(posts) == 1
     assert posts[0]['title'] == 'Test Post Title'
     assert posts[0]['content'] == 'This is test content for the post.'
+
+def test_integration_view_post_detail(client):
+    """Test viewing a specific post detail page."""
+    # Create a post first (using database function for setup)
+    database.create_post('Sample Post', 'This is sample content.')
+    
+    # Get the post ID
+    posts = database.get_all_posts()
+    post_id = posts[0]['id']
+    
+    # View the post
+    response = client.get(f'/post/{post_id}')
+    assert response.status_code == 200
+    assert b'Sample Post' in response.data
+    assert b'This is sample content.' in response.data
+    assert b'Add a Comment' in response.data
