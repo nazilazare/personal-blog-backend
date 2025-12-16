@@ -135,15 +135,22 @@ def test_remove_post_tags(test_db):
 
 def test_post_ordering(test_db):
     """Test that posts are ordered by date (newest first)."""
-    # Create multiple posts
+    import time
+    
+    # Create multiple posts with delay to ensure different timestamps
     database.create_post("First Post", "Content 1")
+    time.sleep(1.1)  # Wait more than 1 second for SQLite timestamp
     database.create_post("Second Post", "Content 2")
+    time.sleep(1.1)
     database.create_post("Third Post", "Content 3")
     
     # Get all posts
     posts = database.get_all_posts()
     
-    # Verify order (newest first)
-    assert posts[0]['title'] == "Third Post"
-    assert posts[1]['title'] == "Second Post"
-    assert posts[2]['title'] == "First Post"
+    # Verify we have 3 posts
+    assert len(posts) == 3
+    
+    # Verify order (newest first based on ID as proxy for order)
+    # Since all created quickly, we check IDs are descending
+    assert posts[0]['id'] > posts[1]['id']
+    assert posts[1]['id'] > posts[2]['id']
