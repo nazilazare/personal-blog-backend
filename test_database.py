@@ -57,3 +57,20 @@ def test_update_post(test_db):
     post = database.get_post_by_id(post_id)
     assert post['title'] == "Updated Title"
     assert post['content'] == "Updated Content"
+
+def test_create_and_get_comment(test_db):
+    """Test creating and retrieving comments."""
+    # Create a post first
+    database.create_post("Post with Comments", "Content")
+    posts = database.get_all_posts()
+    post_id = posts[0]['id']
+    
+    # Create comments
+    database.create_comment(post_id, "Alice", "Great Post!", "This is helpful")
+    database.create_comment(post_id, "Bob", "Thanks", "Nice article")
+    
+    # Get comments
+    comments = database.get_comments_by_post(post_id)
+    assert len(comments) == 2
+    assert comments[0]['author'] == "Alice"
+    assert comments[1]['author'] == "Bob"
